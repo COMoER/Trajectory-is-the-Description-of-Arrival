@@ -818,3 +818,4 @@ cython_debug/
 *.csv
 dataset/*
 *.pdf
+*.pth

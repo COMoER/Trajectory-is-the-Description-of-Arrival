@@ -37,9 +37,9 @@ if __name__ == '__main__':
     model = deepwork(args.dimension,len(model_geo)+1,args.gamma,args.K,args.lr)
     sample_df = pd.read_csv(str(parent.parent/Path("sample_data.csv")))
     texts = list(map(lambda x: list(map(lambda y: int(y), re.findall(r"\d+", x))), sample_df["seq"]))
-    arrival = sample_df['arrival'].to_list()
 
-    model.load_data(texts,arrival,len(model_geo)+1)
+    arrival = sample_df['arrival'].to_list()
+    model.load_data(texts,arrival)
 
     print("[INFO] finish loading")
     save_dir = Path(__file__).resolve().parent / Path("run_%s" % (datetime.now().strftime("%Y-%m-%d_%H_%M_%S")))
