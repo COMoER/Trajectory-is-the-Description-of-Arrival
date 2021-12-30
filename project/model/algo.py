@@ -9,7 +9,7 @@ HIDDEN_SIZE = 256
 from tqdm import tqdm
 
 device = "cuda:0"
-class edge_dataset(Dataset):
+class TrajectoryDataset(Dataset):
     def __init__(self, sample, y, vocal_max):
         """
 
@@ -19,7 +19,7 @@ class edge_dataset(Dataset):
             vocal_max: len of geohash
             K: neg length
         """
-        super(edge_dataset, self).__init__()
+        super(TrajectoryDataset, self).__init__()
         self.vocal_max = vocal_max
         self.T = max([len(v) for v in sample])
         self.sample = []
@@ -52,40 +52,4 @@ class mlp(nn.Module):
         l2 = self.dropout(F.relu(self.fc1(l1_max)))
         return self.fc2(l2)
 
-if __name__ == '__main__':
-    model = mlp(56960).to(device)
-    optim = torch.optim.Adam(model.parameters(),0.01)
-    critic = torch.nn.MSELoss()
-    with open("../train_data.pth", 'rb') as f:
-        X, y = pkl.load(f)
-    size = len(X)
-    print("[INFO] load dataset")
-    train_dataloader = DataLoader(edge_dataset(X[:round(size*0.95)],y[:round(size*0.95)],56960),200,True,drop_last=True)
-    test_data = edge_dataset(X[round(size*0.95):],y[round(size*0.95):],56960)
-    test_dataloader = DataLoader(test_data,len(test_data))
-    print("[INFO] finish")
-    X_test,y_test = None,None
-    for x,y in test_dataloader:
-        X_test = x.to(device)
-        y_test = y.to(device)
-    error_best = 100
-    for epoch in range(100):
-        acc = 0
-        n = 0
-        tbar = tqdm(train_dataloader)
-        model.train()
-        for X,y in tbar:
-            pred = model(X.to(device))
-            loss = critic(pred,y.to(device).float())
-            optim.zero_grad()
-            loss.backward()
-            optim.step()
-            tbar.set_postfix({'loss':"%.3f"%loss.cpu().detach().item()})
-        model.eval()
-        pred = model(X_test).detach()
-        err = critic(pred,y_test).cpu().detach().item()
-        print(f"epoch {epoch} mse is {err:.3f}")
-        if err<error_best:
-            error_best = err
-            torch.save(model.state_dict(),"model_best.pt")
 
