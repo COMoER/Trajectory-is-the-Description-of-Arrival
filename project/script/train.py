@@ -1,6 +1,6 @@
 from pathlib import Path
 import sys
-sys.path.append(Path(__file__).resolve().parent.parent)
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import torch
 import torch.nn as nn
@@ -25,9 +25,11 @@ if __name__ == '__main__':
     optim = torch.optim.Adam(model.parameters(),0.01)
     critic = torch.nn.MSELoss()
     print("[INFO] load dataset")
-    df_train = pd.read_csv("../../dataset/train.csv",delimiter=',')
-    print("[INFO] doing preprocessing")
-    X,y = pipeline(df_train,100000,verbose=True)
+    # df_train = pd.read_csv("../../dataset/train.csv",delimiter=',')
+    # print("[INFO] doing preprocessing")
+    # X,y = pipeline(df_train,100000,verbose=True)
+    with open("../../train_data.pth",'rb') as f:
+        X,y = pkl.load(f)
     size = len(X)
     print("[INFO] doing preprocessing finished")
     train_dataloader = DataLoader(TrajectoryDataset(X[:round(size*0.95)],y[:round(size*0.95)],56960),200,True,drop_last=True)

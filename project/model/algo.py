@@ -8,7 +8,33 @@ import torch.nn.functional as F
 HIDDEN_SIZE = 256
 from tqdm import tqdm
 
-device = "cuda:0"
+
+import random
+
+device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+
+
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+
+setup_seed(2021)
+
+class RandomSelect(nn.Module):
+    def __init__(self,length,T):
+        super(RandomSelect, self).__init__()
+        self.length = length
+        self.T = T
+    def forward(self,paths):
+        length = self.length
+        l = random.randint(round(length*0.5),round(length*0.9))
+        start = random.randint(0,length-l+1)
+        mask = torch.zeros((self.T,),dtype=torch.long)
+        mask[start:start+l] = 1
+        return paths*mask
 class TrajectoryDataset(Dataset):
     def __init__(self, sample, y, vocal_max):
         """
@@ -23,19 +49,21 @@ class TrajectoryDataset(Dataset):
         self.vocal_max = vocal_max
         self.T = max([len(v) for v in sample])
         self.sample = []
+        self.randomSelect = []
         for sen in tqdm(sample):
             senpad = np.zeros(self.T, np.long)
+            self.randomSelect.append(RandomSelect(len(sen),self.T))
             senpad[:len(sen)] = np.array(sen) + 1 # shift one position to contain padding 0
             self.sample.append(senpad)
         self.arrival = y
-        self.paths = torch.LongTensor(self.sample)  # (N,T)
+        self.paths = torch.LongTensor(self.sample) # (N,T)
         self.nodes = torch.FloatTensor(self.arrival).view(-1,2)  # (N,2)
 
     def __len__(self):
         return len(self.sample)
 
     def __getitem__(self, idx):
-        return self.paths[idx],  self.arrival[idx]
+        return self.randomSelect[idx](self.paths[idx]),self.arrival[idx]
 class mlp(nn.Module):
     def __init__(self,vocal_max):
         super(mlp, self).__init__()
