@@ -33,12 +33,8 @@ class RandomSelect(nn.Module):
         self.test = test
         if test:
             # test dataset not random select length while different path
-            if self.head:
-                self.l = random.randint(round(length * 0.3), round(length * 0.7))
-                self.start = 0
-            else:
-                self.l = random.randint(round(length * 0.5), round(length * 0.9))
-                self.start = random.randint(0, length - self.l + 1)
+            self.l = round(length * 0.7)
+            self.start = 0
 
     def forward(self, paths):
         length = self.length
@@ -60,7 +56,6 @@ class RandomSelect(nn.Module):
 class TrajectoryDataset(Dataset):
     def __init__(self, sample, y, vocal_max,test=False,head=False,random=False):
         """
-
         Args:
             sample: List[path]
             arrival: List[node]
@@ -102,7 +97,7 @@ class mlp(nn.Module):
         self.fc2 = nn.Linear(HIDDEN_SIZE, 2)
         self.dropout = nn.Dropout(0.5)
 
-    def forward(self, x):
+    def forward(self, x,loc,meta):
         embedding = self.embed(x)  # B,T,32
         embedding = embedding.permute(0, 2, 1)  # B,C,T
         l1 = F.relu(self.conv(embedding))
