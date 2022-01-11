@@ -117,7 +117,6 @@ class mlp(nn.Module):
         l1_max_norm = self.bn1(l1_max)
         l1_max_first_point_norm = self.bn2(l1_max_first_point)
         features = torch.cat((l1_max_norm, l1_max_first_point_norm), dim=1) # B,32+16
-
         l2 = self.dropout(F.relu(self.fc1(features)))
-        
+
         return self.fc2(l2)
