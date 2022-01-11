@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 
 from model.algo import mlp,device,TrajectoryDataset
-from utils.common import loadGeoHashEncoder,LonLatVocal
+from utils.common import loadGeoHashEncoder,LonLatVocal,setup_seed
 from utils.coordination import LatLonTransform
 from utils.preprocess import pipeline
 
@@ -70,6 +70,7 @@ if __name__ == '__main__':
         X_test = x.to(device)
         y_test = y.to(device)
     error_best = 100
+    setup_seed(2021)
     for epoch in range(args.epoch):
         logger.info('**** EPOCH %03d ****' % (epoch))
         acc = 0

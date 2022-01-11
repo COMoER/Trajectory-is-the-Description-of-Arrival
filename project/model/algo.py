@@ -15,12 +15,6 @@ from utils.common import setup_seed
 device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
 
-
-
-
-setup_seed(2021)
-
-
 class RandomSelect(nn.Module):
     def __init__(self, length, T, head, test):
         super(RandomSelect, self).__init__()
@@ -30,7 +24,7 @@ class RandomSelect(nn.Module):
         self.test = test
         if test:
             # test dataset not random select length while different path
-            self.l = round(length * 0.7)
+            self.l = random.randint(round(length * 0.2),round(length*0.9))
             self.start = 0
 
     def forward(self, paths):
@@ -59,6 +53,7 @@ class TrajectoryDataset(Dataset):
             vocal_max: len of geohash
             K: neg length
         """
+        setup_seed(2021)
         super(TrajectoryDataset, self).__init__()
         self.vocal_max = vocal_max
         self.T = max([len(v) for v in sample])
@@ -94,7 +89,7 @@ class mlp(nn.Module):
         self.fc2 = nn.Linear(HIDDEN_SIZE, 2)
         self.dropout = nn.Dropout(0.5)
 
-    def forward(self, x, loc, meta):
+    def forward(self, x):
         embedding = self.embed(x)  # B,T,32
         embedding = embedding.permute(0, 2, 1)  # B,C,T
         l1 = F.relu(self.conv(embedding))
