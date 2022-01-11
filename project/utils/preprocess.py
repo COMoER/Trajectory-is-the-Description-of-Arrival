@@ -40,7 +40,7 @@ def pipeline(df, n=100000,test=False,verbose=True):
                 position_xy=trans.transform(position)
                 train_first_points.append(position_xy)
 
-            return X,train_first_points,np.array(meta_data).T
+        return X,train_first_points,np.array(meta_data).T
     setup_seed(2021)
     # from dataset sample n samples
     sample_df = df.sample(n)

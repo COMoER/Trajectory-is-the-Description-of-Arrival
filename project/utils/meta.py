@@ -16,10 +16,17 @@ def mapMeta(df_train):
     """
     with open(os.path.join(install_path,"pretrained","meta_map.pt"), 'rb') as f:
         map_dict = pkl.load(f)
+    def query(q,dic):
+        try:
+            x = dic[q]
+            return x
+        except:
+            print('ii')
+            return 0
     taxi_map, call_map, stand_map = map_dict.values()
     df_train['TAXI_ID'] = [taxi_map[t] for t in df_train['TAXI_ID']]
-    df_train["ORIGIN_CALL"] = [call_map[t] for t in df_train["ORIGIN_CALL"].fillna(-1)]
-    df_train["ORIGIN_STAND"] = [stand_map[t] for t in df_train["ORIGIN_STAND"].fillna(-1)]
+    df_train["ORIGIN_CALL"] = [query(t,call_map) for t in df_train["ORIGIN_CALL"].fillna(-1)]
+    df_train["ORIGIN_STAND"] = [query(t,stand_map) for t in df_train["ORIGIN_STAND"].fillna(-1)]
     times = df_train["TIMESTAMP"]
     x = [datetime.datetime.fromtimestamp(time, datetime.timezone.utc) for time in times]
     df_train = df_train.reset_index()
