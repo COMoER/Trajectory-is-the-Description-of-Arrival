@@ -87,20 +87,16 @@ class TrajectoryDataset(Dataset):
         self.arrival = y
         self.paths = torch.LongTensor(self.sample)  # (N,T)
         self.nodes = torch.FloatTensor(self.arrival).view(-1, 2)  # (N,2)
-        if meta:
-            self.meta_data = torch.LongTensor(meta_data) # N,M
-        if prefix:
-            self.n_point = torch.FloatTensor(train_first_points) # (N,5,2)
+        self.meta_data = torch.LongTensor(meta_data) # N,M
+        self.n_point = torch.FloatTensor(train_first_points) # (N,5,2)
     def __len__(self):
         return len(self.sample)
 
     def __getitem__(self, idx):
         if self.random:
-            return self.randomSelect[idx](self.paths[idx]), self.arrival[idx], self.n_point[idx] if self.prefix else None,\
-                   self.meta_data[idx] if self.meta else None
+            return self.randomSelect[idx](self.paths[idx]), self.arrival[idx], self.n_point[idx],self.meta_data[idx] 
         else:
-            return self.paths[idx], self.arrival[idx], self.n_point[idx] if self.prefix else None,\
-                   self.meta_data[idx] if self.meta else None
+            return self.paths[idx], self.arrival[idx], self.n_point[idx],self.meta_data[idx]
 
 
 
@@ -145,15 +141,15 @@ class mlpMetaEmbedding(nn.Module):
         super(mlpMetaEmbedding, self).__init__()
         self.embed = nn.Embedding(vocal_max + 1, 32, padding_idx=0)  # padding
         self.conv = nn.Conv1d(32, 32, kernel_size=3, padding=1)
+        N = 32
         if first_point:
             self.conv_first_point = nn.Conv1d(2, 16, kernel_size=3, padding=1)
+            N += 16
         self.meta = meta
         self.first_point=first_point
-        N = 32 + 16
         if meta:
             self.metaEmbed = metaEmbedding(embed_table)
             N += self.metaEmbed.shape
-
         self.out = outputLayer(N)
     def forward(self, x, first_points=None,metas=None):
 

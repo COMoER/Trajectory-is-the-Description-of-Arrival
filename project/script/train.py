@@ -35,7 +35,7 @@ if __name__ == '__main__':
     parser.add_argument("--random_length",action="store_true",default=True,help="using random pick training")
     parser.add_argument("--head",action="store_true",help="using random prefix")
     parser.add_argument("--prefix",action="store_true",help="using 5 prefix input")
-    parser.add_argument("--meta",action="store_true",help="add metadata to train")
+    parser.add_argument("--meta",action="store_true",default=False,help="add metadata to train")
     parser.add_argument("--out",action="store_true",help="add train data that has outlier geohash location")
     parser.add_argument("--lr",type=float,default=0.01,help="learning rate")
     parser.add_argument("--size",type=int,default=100000,help="# of randomly picked from trainset")
@@ -71,16 +71,16 @@ if __name__ == '__main__':
     # test=False,head=False,random=False,prefix=False,meta=False
     train_dataloader = DataLoader(TrajectoryDataset(X[:round(size*0.95)],y[:round(size*0.95)],
                                                     56960,
-                                                    meta_data=meta_data[:round(size*0.95)] if args.meta else None,
-                                                    train_first_points = first_points[:round(size*0.95)] if args.prefix else None,
+                                                    meta_data=meta_data[:round(size*0.95)] ,
+                                                    train_first_points = first_points[:round(size*0.95)] ,
                                                     test=False,
                                                     head=args.head,
                                                     random=args.random_length,prefix=args.prefix,
                                                     meta=args.meta),300,True,drop_last=True)
     test_data = TrajectoryDataset(X[round(size*0.95):],y[round(size*0.95):],
                                                     56960,
-                                                    meta_data=meta_data[round(size*0.95):] if args.meta else None,
-                                                    train_first_points = first_points[round(size*0.95):] if args.prefix else None,
+                                                    meta_data=meta_data[round(size*0.95):] ,
+                                                    train_first_points = first_points[round(size*0.95):] ,
                                                     test=True,
                                                     head=args.head,
                                                     random=args.random_length,prefix=args.prefix,
@@ -103,10 +103,9 @@ if __name__ == '__main__':
         model.train()
         loss_sum = 0
         for X,y,first_points,meta_data in tbar:
-            if first_points is not None:
-                first_points = first_points.to(device)
-            if meta_data is not None:
-                meta_data = meta_data.to(device)
+            first_points = first_points.to(device)
+            meta_data = meta_data.to(device)
+
             pred = model(X.to(device),first_points,meta_data)
             loss = critic(pred,y.to(device).float())
             optim.zero_grad()

@@ -54,6 +54,6 @@ def getMetaMap(df_train):
     with open(os.path.join(install_path,"pretrained","meta_map.pt"), 'wb') as f:
         pkl.dump({'taxi': taxi_map, 'call': call_map, 'stand': stand_map}, f)
 if __name__ == '__main__':
-    # df_train = pd.read_csv(os.path.join(dataset_path,"dataset","test.csv"),delimiter=',')
-    # getMetaMap(df_train)
+    df_train = pd.read_csv(os.path.join(dataset_path,"dataset","train.csv"),delimiter=',')
+    getMetaMap(df_train)
     getEmbedInfo()
