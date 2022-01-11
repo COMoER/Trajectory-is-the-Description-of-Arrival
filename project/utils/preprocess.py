@@ -5,7 +5,7 @@ sys.path.append(Path(__file__).resolve().parent.parent)
 import pandas as pd
 import numpy as np
 import pickle as pkl
-from utils.common import str2trajectory, loadGeoHashEncoder, LonLatVocal
+from utils.common import str2trajectory, loadGeoHashEncoder, LonLatVocal,setup_seed
 from utils.coordination import loadTransform, LatLonTransform
 
 
@@ -18,7 +18,7 @@ def pipeline(df, n=100000,test=False,verbose=True):
         seq, mask_seq = modelGeo.transform(se, arrival=False, return_mask=True, test=True)
         X = seq
         return X
-
+    setup_seed(2021)
     # from dataset sample n samples
     sample_df = df.sample(n)
     # preprocess of the dataset str trajectory

@@ -14,11 +14,7 @@ import random
 device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
 
-def setup_seed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-    random.seed(seed)
+
 
 
 setup_seed(2021)

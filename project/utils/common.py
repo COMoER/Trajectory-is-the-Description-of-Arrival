@@ -6,8 +6,14 @@ import numpy as np
 import pandas as pd
 import pickle as pkl
 from utils.geohash import GeoHash
+import torch
+import random
 
-
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
 def str2trajectory(df,n=-1,return_mask=False):
     series = []
     mask = []
