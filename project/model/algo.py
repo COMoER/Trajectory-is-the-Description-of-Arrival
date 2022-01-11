@@ -58,12 +58,13 @@ class RandomSelect(nn.Module):
 
 
 class TrajectoryDataset(Dataset):
-    def __init__(self, sample, y, vocal_max,test=False,head=False,random=False):
+    def __init__(self, sample, y, train_first_points, vocal_max,test=False,head=False,random=False):
         """
 
         Args:
             sample: List[path]
             arrival: List[node]
+            train_first_points: List[position]
             vocal_max: len of geohash
             K: neg length
         """
@@ -82,15 +83,15 @@ class TrajectoryDataset(Dataset):
         self.arrival = y
         self.paths = torch.LongTensor(self.sample)  # (N,T)
         self.nodes = torch.FloatTensor(self.arrival).view(-1, 2)  # (N,2)
-
+        self.n_point = torch.FloatTensor(train_first_points) # (N,5,2)
     def __len__(self):
         return len(self.sample)
 
     def __getitem__(self, idx):
         if self.random:
-            return self.randomSelect[idx](self.paths[idx]), self.arrival[idx]
+            return self.randomSelect[idx](self.paths[idx]), self.arrival[idx], self.n_point[idx]
         else:
-            return self.paths[idx], self.arrival[idx]
+            return self.paths[idx], self.arrival[idx], self.n_point[idx]
 
 
 class mlp(nn.Module):
@@ -102,7 +103,7 @@ class mlp(nn.Module):
         self.fc2 = nn.Linear(HIDDEN_SIZE, 2)
         self.dropout = nn.Dropout(0.5)
 
-    def forward(self, x):
+    def forward(self, x,first_points): #first point B,5,2
         embedding = self.embed(x)  # B,T,32
         embedding = embedding.permute(0, 2, 1)  # B,C,T
         l1 = F.relu(self.conv(embedding))

@@ -11,13 +11,31 @@ from utils.coordination import loadTransform, LatLonTransform
 
 def pipeline(df, n=100000,test=False,verbose=True):
 
-    modelGeo: LonLatVocal = loadGeoHashEncoder("../pretrained/geohashmodel.pt")
+    modelGeo: LonLatVocal = loadGeoHashEncoder("pretrained/geohashmodel.pt")
 
     if test:
         se, mask = str2trajectory(df, return_mask=True)
         seq, mask_seq = modelGeo.transform(se, arrival=False, return_mask=True, test=True)
         X = seq
-        return X
+        train_first_points = []
+        n_first_point = 5 #select first 5 point
+        trans:LatLonTransform = loadTransform("pretrained/trans.pt")
+        for m, seq in zip(mask, se):
+            if m:
+                lon = seq[::2]
+                lat = seq[1::2]
+                position = np.vstack((lat,lon))
+                position = position.T
+                if (position.shape[0]<n_first_point):
+                    padding=np.tile(position[-1],(n_first_point-position.shape[0],1))
+                    position = np.vstack((position,padding))
+                position = position[:n_first_point]
+                position_xy=trans.transform(position)
+                train_first_points.append(position_xy)
+
+
+
+        return X,train_first_points
 
     # from dataset sample n samples
     sample_df = df.sample(n)
@@ -42,6 +60,22 @@ def pipeline(df, n=100000,test=False,verbose=True):
     for m, seq in zip(mask, series):
         if m:
             train_latlon_seq.append((seq[-1], seq[-2]))
+    train_first_points = []
+    n_first_point = 5 #select first 5 point
+    trans:LatLonTransform = loadTransform("pretrained/trans.pt")
+    for m, seq in zip(mask, series):
+        if m:
+            seq = seq[:-2]
+            lon = seq[::2]
+            lat = seq[1::2]
+            position = np.vstack((lat,lon))
+            position = position.T
+            if (position.shape[0]<n_first_point):
+                padding=np.tile(position[-1],(n_first_point-position.shape[0],1))
+                position = np.vstack((position,padding))
+            position = position[:n_first_point]
+            position_xy=trans.transform(position)
+            train_first_points.append(position_xy)
 
     if verbose:
         print('.',end='')
@@ -55,9 +89,8 @@ def pipeline(df, n=100000,test=False,verbose=True):
     X = sample_df['seq'].to_list()
     y = np.array(sample_df['arr'].to_list())
 
-    trans:LatLonTransform = loadTransform("../pretrained/trans.pt")
     # transform from lat-lon coordination to x-y coordination
     y = trans.transform(y)
     if verbose:
         print()
-    return X, y
+    return X, y ,train_first_points

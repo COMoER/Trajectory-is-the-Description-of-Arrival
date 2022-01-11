@@ -63,6 +63,19 @@ class LonLatVocal:
         for se in series:
             x = GeoHash.encode(se,GEOHASHLEVEL)
             x = x-self._wordMin
+            '''
+            x[np.logical_or(x > self._wordMax,x < 0)] = -1+0.0001
+            if test:
+                 # padding
+                series_trans.append(x[-1] if arrival else x)
+                mask.append(True)
+                continue
+            if arrival or len(x) > 1:
+                series_trans.append(x[-1] if arrival else x)
+                mask.append(True)
+            else:
+                mask.append(False)
+            '''
             if test:
                 x[np.logical_or(x > self._wordMax,x < 0)] = -1 # padding
                 series_trans.append(x[-1] if arrival else x)
