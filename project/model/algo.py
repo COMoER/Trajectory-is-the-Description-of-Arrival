@@ -10,6 +10,7 @@ HIDDEN_SIZE = 256
 from tqdm import tqdm
 
 import random
+from utils.common import setup_seed
 
 device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
