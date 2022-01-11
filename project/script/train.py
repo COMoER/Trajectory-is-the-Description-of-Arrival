@@ -91,8 +91,10 @@ if __name__ == '__main__':
     for x,y,first_points,meta_data in test_dataloader:
         X_test = x.to(device)
         y_test = y.to(device)
-        first_points_test = first_points.to(device)
-        meta_data_test = meta_data.to(device)
+        if first_points is not None:
+            first_points_test = first_points.to(device)
+        if meta_data is not None:
+            meta_data_test = meta_data.to(device)
     error_best = 100
     setup_seed(2021)
     for epoch in range(args.epoch):
