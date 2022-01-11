@@ -1,6 +1,8 @@
 from pathlib import Path
 import sys
+import os
 sys.path.append(Path(__file__).resolve().parent.parent)
+install_path = str(Path(__file__).resolve().parent.parent)
 
 import numpy as np
 import pandas as pd
@@ -69,19 +71,6 @@ class LonLatVocal:
         for se in series:
             x = GeoHash.encode(se,GEOHASHLEVEL)
             x = x-self._wordMin
-            '''
-            x[np.logical_or(x > self._wordMax,x < 0)] = -1+0.0001
-            if test:
-                 # padding
-                series_trans.append(x[-1] if arrival else x)
-                mask.append(True)
-                continue
-            if arrival or len(x) > 1:
-                series_trans.append(x[-1] if arrival else x)
-                mask.append(True)
-            else:
-                mask.append(False)
-            '''
             if test:
                 x[np.logical_or(x > self._wordMax,x < 0)] = -1 # padding
                 series_trans.append(x[-1] if arrival else x)
@@ -120,7 +109,7 @@ def trainGeoHash(df:pd.DataFrame,n=100000):
     """
     model = LonLatVocal()
     model.fit(df[:n], n=-1, verbose=True)
-    with open("pretrained/geohashmodel.pt", 'wb') as f:
+    with open(os.path.join(install_path,"pretrained","geohashmodel.pt"), 'wb') as f:
         pkl.dump(model, f)
 
 def loadGeoHashEncoder(path="geohashmodel.pt"):

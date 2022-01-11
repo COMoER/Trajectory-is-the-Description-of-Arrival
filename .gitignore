@@ -820,3 +820,6 @@ dataset/*
 *.pdf
 *.pth
 shapelets.md
+prediction-taxi-trajectory.ipynb
+WORDCNN/*
+node2vec/*

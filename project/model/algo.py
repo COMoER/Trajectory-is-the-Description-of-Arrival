@@ -24,7 +24,7 @@ class RandomSelect(nn.Module):
         self.test = test
         if test:
             # test dataset not random select length while different path
-            self.l = random.randint(round(length * 0.2),round(length*0.9))
+            self.l = random.randint(round(length * 0.2),round(length*0.7))
             self.start = 0
 
     def forward(self, paths):
@@ -99,69 +99,4 @@ class mlp(nn.Module):
         return self.fc2(l2)
 
 
-class outputLayer(nn.Module):
-    def __init__(self, input_size):
-        super(outputLayer, self).__init__()
-        self.fc1 = nn.Linear(input_size, HIDDEN_SIZE)
-        self.fc2 = nn.Linear(HIDDEN_SIZE, 2)
-        self.dropout = nn.Dropout(0.5)
 
-    def forward(self, x):
-        l2 = self.dropout(F.relu(self.fc1(x)))
-        return self.fc2(l2)
-
-
-class metaEmbedding(nn.Module):
-    def __init__(self, embed_table: dict, norm=True):
-        super(metaEmbedding, self).__init__()
-        self.embed_table = []
-        self.dim = 0
-        for _, info in embed_table.items():
-            num, size, pad = info
-            self.dim += size
-            if pad:
-                if norm:
-                    self.embed_table.append(nn.Embedding(num + 1, size, padding_idx=0, max_norm=1))
-                else:
-                    self.embed_table.append(nn.Embedding(num + 1, size, padding_idx=0))
-            else:
-                if norm:
-                    self.embed_table.append(nn.Embedding(num, size, max_norm=1))
-                else:
-                    self.embed_table.append(nn.Embedding(num, size))
-    @property
-    def shape(self):
-        return self.dim
-    def forward(self, metas):
-        embeddings = []
-        for m, layer in zip(metas, self.embed_table):
-            embeddings.append(layer(m))
-        return torch.cat(embeddings, -1)
-
-
-class mlpMetaEmbedding(nn.Module):
-    def __init__(self, vocal_max, meta=False, embed_table=None):
-        super(mlpMetaEmbedding, self).__init__()
-        self.embed = nn.Embedding(vocal_max + 1, 32, padding_idx=0, max_norm=1)  # padding
-        self.conv = nn.Conv1d(32, 32, kernel_size=3, padding=1)
-        self.meta = meta
-        N = 32
-        if meta:
-            self.metaEmbed = metaEmbedding(embed_table, norm=True)
-            N += self.metaEmbed.shape
-
-        self.out = outputLayer(N)
-
-    def forward(self, x, metas=None):
-        if self.meta:
-            meta_embed = self.metaEmbed(metas)
-        embedding = self.embed(x)  # B,T,32
-        embedding = embedding.permute(0, 2, 1)  # B,C,T
-        l1 = F.relu(self.conv(embedding))
-        l1_max = torch.max(l1, dim=-1)[0]  # B,32 over-time-maxpooling
-        if self.meta:
-            l1_cat = torch.cat([l1_max, meta_embed], -1)
-        else:
-            l1_cat = l1_max
-        l2 = self.dropout(F.relu(self.fc1(l1_cat)))
-        return self.fc2(l2)
