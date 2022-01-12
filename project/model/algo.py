@@ -24,7 +24,7 @@ class RandomSelect(nn.Module):
         self.test = test
         if test:
             # test dataset not random select length while different path
-            self.l = random.randint(round(length * 0.2),round(length*0.7))
+            self.l = random.randint(round(length * 0.1),round(length*0.5))
             self.start = 0
 
     def forward(self, paths):

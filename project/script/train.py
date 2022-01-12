@@ -46,10 +46,10 @@ setup_seed(2021)
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--random_length", action="store_true", default=True, help="using random pick training")
+    parser.add_argument("--random_length", action="store_true", help="using random pick training")
     parser.add_argument("--head", action="store_true", help="using random prefix")
     parser.add_argument("--prefix", action="store_true", help="using 5 prefix input")
-    parser.add_argument("--meta", action="store_true", default=False, help="add metadata to train")
+    parser.add_argument("--meta", action="store_true", help="add metadata to train")
     parser.add_argument("--lr", type=float, default=0.01, help="learning rate")
     parser.add_argument("--size", type=int, default=150000, help="# of randomly picked from trainset")
     parser.add_argument("--epoch", type=int, default=50, help="# of max epoch")
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                                                     meta_data=dataset['train'][3],
                                                     test=False,
                                                     head=args.head,
-                                                    random=args.random_length, prefix=args.prefix,
+                                                    random_length=args.random_length, prefix=args.prefix,
                                                     meta=args.meta), 300, True, drop_last=True)
     val_data = TrajectoryDataset(dataset['val'][0],
                                  dataset['val'][1],
@@ -104,34 +104,20 @@ if __name__ == '__main__':
                                  meta_data=dataset['val'][3],
                                  test=True,
                                  head=args.head,
-                                 random=args.random_length, prefix=args.prefix,
+                                 random_length=args.random_length, prefix=args.prefix,
                                  meta=args.meta)
     test_data = TrajectoryDataset(dataset['test'][0],
                                   dataset['test'][1],
-                                 56960,
-                                 train_first_points=dataset['test'][2],
-                                 meta_data=dataset['test'][3],
-                                 test=True,
-                                 head=args.head,
-                                 random=args.random_length, prefix=args.prefix,
-                                 meta=args.meta)
-    val_dataloader = DataLoader(val_data, len(val_data))
-    test_dataloader = DataLoader(test_data, len(test_data))
+                                  56960,
+                                  train_first_points=dataset['test'][2],
+                                  meta_data=dataset['test'][3],
+                                  test=True,
+                                  head=args.head,
+                                  random_length=args.random_length, prefix=args.prefix,
+                                  meta=args.meta)
+    val_dataloader = DataLoader(val_data, 200, drop_last=True)
+    test_dataloader = DataLoader(test_data, 200, drop_last=True)
     print("[INFO] data load finish")
-    for x, y, first_points, meta_data in test_dataloader:
-        X_test = x
-        y_test = y
-        if first_points is not None:
-            first_points_test = first_points
-        if meta_data is not None:
-            meta_data_test = meta_data
-    for x, y, first_points, meta_data in val_dataloader:
-        X_val = x
-        y_val = y
-        if first_points is not None:
-            first_points_val = first_points
-        if meta_data is not None:
-            meta_data_val = meta_data
     error_best = 10000
 
     for epoch in range(args.epoch):
@@ -153,9 +139,14 @@ if __name__ == '__main__':
             tbar.set_postfix({'loss': "%.3f" % loss.cpu().detach().item()})
 
         model.eval()
-        pred = model(X_val.to(device), first_points_val.to(device), meta_data_val.to(device)).detach()
-        err = critic(pred, y_val.to(device)).cpu().detach().item()
-        err_h = test_score(pred.cpu().numpy().reshape(-1,2),y_val.detach().numpy().reshape(-1,2))
+        err = 0
+        err_h = 0
+        for x, y, first_points, meta_data in val_dataloader:
+            pred = model(x.to(device), first_points.to(device), meta_data.to(device)).detach()
+            err += critic(pred, y.to(device)).cpu().detach().item()
+            err_h += test_score(pred.cpu().numpy().reshape(-1, 2), y.detach().numpy().reshape(-1, 2))
+        err /= len(val_dataloader)
+        err_h /= len(val_dataloader)
         print(f"epoch {epoch} mse is {err:.3f} err is {err_h:.3f}km")
         logger.info('train_loss: %.6f', loss_sum / len(tbar))
         logger.info('val_loss: %.6f', err)
@@ -164,14 +155,19 @@ if __name__ == '__main__':
             error_best = err
             print(f"[BEST] epoch {epoch} mse is {err:.3f} err is {err_h:.3f}km")
             torch.save(model.state_dict(), os.path.join(dir, "model_best.pt"))
-
     torch.save(model.state_dict(), os.path.join(dir, "model_last.pt"))
     model.eval()
-    pred = model(X_test.to(device), first_points_test.to(device), meta_data_test.to(device)).cpu().detach().numpy().reshape(-1, 2)
-    err_h = test_score(pred, y_test.detach().numpy().reshape(-1, 2))
+    err_h = 0
+    for x, y, first_points, meta_data in test_dataloader:
+        pred = model(x.to(device), first_points.to(device), meta_data.to(device)).cpu().detach().numpy().reshape(-1, 2)
+        err_h += test_score(pred, y.detach().numpy().reshape(-1, 2))
+    err_h /= len(test_dataloader)
     logger.info('last model test_err: %.6fkm', err_h)
-    model.load_state_dict(torch.load(os.path.join(dir, "model_best.pt"),device))
+    model.load_state_dict(torch.load(os.path.join(dir, "model_best.pt"), device))
     model.eval()
-    pred = model(X_test.to(device), first_points_test.to(device), meta_data_test.to(device)).cpu().detach().numpy().reshape(-1, 2)
-    err_h = test_score(pred, y_test.detach().numpy().reshape(-1, 2))
+    err_h = 0
+    for x, y, first_points, meta_data in test_dataloader:
+        pred = model(x.to(device), first_points.to(device), meta_data.to(device)).cpu().detach().numpy().reshape(-1, 2)
+        err_h += test_score(pred, y.detach().numpy().reshape(-1, 2))
+    err_h /= len(test_dataloader)
     logger.info('best model test_err: %.6fkm', err_h)

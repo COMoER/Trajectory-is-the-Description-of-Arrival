@@ -20,9 +20,8 @@ class RandomSelect(nn.Module):
         self.head = head
         self.test = test
         if test:
-            np.random.seed(2021) # set random seed
             # test dataset not random select length while different path
-            self.l = random.randint(round(length * 0.2),round(length*0.7))
+            self.l = random.randint(round(length * 0.1),round(length*0.5))
             self.start = 0
 
     def forward(self, paths):
@@ -44,7 +43,7 @@ class RandomSelect(nn.Module):
 
 class TrajectoryDataset(Dataset):
     def __init__(self, sample, y,vocal_max,meta_data=None,train_first_points=None,
-                 test=False,head=False,random=False,prefix=False,meta=False):
+                 test=False,head=False,random_length=False,prefix=False,meta=False):
         """
 
         Args:
@@ -58,14 +57,16 @@ class TrajectoryDataset(Dataset):
         super(TrajectoryDataset, self).__init__()
         self.vocal_max = vocal_max
         self.T = max([len(v) for v in sample])
-        self.random = random
+        self.random = random_length
         self.prefix = prefix
         self.meta = meta
         self.sample = []
         self.randomSelect = []
+        self.test = test
+        random.seed(2021)  # set random seed
         for sen in tqdm(sample):
             senpad = np.zeros(self.T, np.long)
-            if self.random:
+            if self.random or self.test:
                 self.randomSelect.append(RandomSelect(len(sen), self.T,head,test))
             senpad[:len(sen)] = np.array(sen) + 1  # shift one position to contain padding 0
             self.sample.append(senpad)
@@ -78,7 +79,7 @@ class TrajectoryDataset(Dataset):
         return len(self.sample)
 
     def __getitem__(self, idx):
-        if self.random:
+        if self.random or self.test:
             return self.randomSelect[idx](self.paths[idx]), self.arrival[idx], self.n_point[idx],self.meta_data[idx] 
         else:
             return self.paths[idx], self.arrival[idx], self.n_point[idx],self.meta_data[idx]
