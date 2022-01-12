@@ -53,6 +53,7 @@ if __name__ == '__main__':
     lon = pred[:, 1]
 
     tra = df["TRIP_ID"]
-
+    if not os.path.exists(os.path.join(install_path,"results")):
+        os.mkdir(os.path.join(install_path,"results"))
     sub_df = pd.DataFrame(data=list(zip(tra, lat, lon)), columns=["TRIP_ID", "LATITUDE", "LONGITUDE"])
     sub_df.to_csv(os.path.join(install_path,"results","mysubmit.csv"), index=False)

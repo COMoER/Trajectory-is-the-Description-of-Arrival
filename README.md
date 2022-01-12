@@ -1,26 +1,58 @@
-### 时空数据挖掘
+## Trajectory is the Description of Arrival
+> The final project of **SJTU AI3602** *Data Mining* course Group 23 
+#### Introduction
+Our project is focus on the prediction of taxi arrival by its trajectory (prefix) , the trip start time and some meta information like TAXI ID, CALL PHONE NUMBER and STAND ID, which is based on the competition held by ECML/PKDD on *kaggle* in 2015. The competition has ended so we just compare our result with the scores of the teams joining it. The dataset is available at [https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i](https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i).
 
-> 第二十三组 郑煜 刘昊 李嘉霖
+#### Dependency
 
-##### 课题简介
+>conda create -n trajectory python=3.8
+>
+>conda activate trajectory
+>
+>pip install -r requirements.txt
 
-我们大作业项目将基于Kaggle [ECML/PKDD 15: Taxi Trajectory Prediction (I)]([ECML/PKDD 15: Taxi Trajectory Prediction (I) | Kaggle](https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i)) Competition，将对数据集中数据进行分析，根据时空数据的特性，对中间的位置序列以及时间进行数据预处理，提取出相应的discriminative feature，最后采用回归模型得到预测结果
+#### Usage of our code
 
-##### 目前进展
+Before all, you should download the dataset from *kaggle* [ECML/PKDD 15: Taxi Trajectory Prediction (I) | Kaggle](https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i/data) and save it as a directory named *dataset* in main context, that is, *dataset* has the same parent with *project*
 
-- 确定数据
-- 对数据集特征进行了组内讨论
-- 阅读了[综述]([Spatio-Temporal Data Mining: A Survey of Problems and Methods: ACM Computing Surveys: Vol 51, No 4](https://dl.acm.org/doi/abs/10.1145/3161602)),调研了时空数据的特征以及了解一些处理序列以及时间数据的算法
-- 初步确定方法
-    - 将基于[shapelets]([基于Shapelet的时间序列分类方法实战 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/359666547))对spatial trajectory提取discriminative feature
-    - 将对连续的经纬度信息进行聚类以便上述操作
-    - 分析有效具有周期性的时间特征
+Our main codes are in the directory *project*.
+- *pretained* directory contains the pretrained binary file to successfully do preprecessing of the raw data.
+- *utils* directory contains the supporting class for preprocessing and evaluation.
+- *script* directory contains the train and generation(the submission of *kaggle*) script
+- *model* directory contains the deep learning model
 
+So just run the *train.py* script
 
-$$
-x = \cos \mu R_E (\lambda-\lambda_0)\\
-y = R_N(\mu-\mu_0)
-$$
-[(59条消息) WGS-84坐标系_EagleLY5894的博客-CSDN博客_wgs84坐标系查询](https://blog.csdn.net/EagleLY5894/article/details/104118465)
+> python project/script/train.py
 
-##### 
+The available options are
+
+> --size N	the size of sampling from whole dataset
+>
+> --epoch E 	the max epoch
+>
+> --lr LR	the learning rate of Adam optimizer
+>
+> --random_length using random length training, default using partial mode
+>
+> --head change partial mode to head mode
+>
+> --prefix add prefix 5 point (x,y) position to input
+>
+> --meta add meta information (start time and other meta information) to input
+
+The result will automatically be saved to the *log* directory with the training starting time as the directory name, which contains 
+
+> args.yaml	contains the parameters selected above 
+>
+> log_train.txt	contains the training log like validation loss and arrival error
+>
+> model_best.pt the parameter of the model which has the best loss performance on validation
+>
+> model_last.pt the parameter of the model of the last epoch
+
+To generate the submission of *kaggle*, you should first put the trained parameter into the *pretrained* directory and name it *model_best.pt*, then run
+
+> python project/script/gen.py
+
+add `--prefix` and `--meta` if you use them to train. 

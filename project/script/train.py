@@ -55,6 +55,8 @@ if __name__ == '__main__':
     parser.add_argument("--epoch", type=int, default=50, help="# of max epoch")
     args = parser.parse_args()
 
+    if not os.path.exists(os.path.join(install_path,"log")):
+        os.mkdir(os.path.join(install_path,"log"))
     dir = os.path.join(install_path, "log", datetime.now().strftime("%Y%m%d_%H%M%S"))
     if not os.path.exists(dir):
         os.mkdir(dir)
