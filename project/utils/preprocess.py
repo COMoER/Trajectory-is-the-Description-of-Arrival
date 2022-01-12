@@ -42,9 +42,8 @@ def pipeline(df, n=100000,test=False,verbose=True):
                 train_first_points.append(position_xy)
 
         return X,train_first_points,np.array(meta_data).T
-    setup_seed(2021)
     # from dataset sample n samples
-    sample_df = df.sample(n)
+    sample_df = df.sample(n,random_state=2021)
     # preprocess of the dataset str trajectory
     series, mask = str2trajectory(sample_df, return_mask=True)
 

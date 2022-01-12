@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
-import pickle as pkl
 import numpy as np
 from torch.utils.data.dataset import Dataset
-from torch.utils.data.dataloader import DataLoader
+from utils.common import setup_seed
 import torch.nn.functional as F
 
 HIDDEN_SIZE = 256
@@ -13,17 +12,6 @@ import random
 
 device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
-
-def setup_seed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-
-
-setup_seed(2021)
-
-
 class RandomSelect(nn.Module):
     def __init__(self, length, T, head,test):
         super(RandomSelect, self).__init__()
@@ -32,6 +20,7 @@ class RandomSelect(nn.Module):
         self.head = head
         self.test = test
         if test:
+            np.random.seed(2021) # set random seed
             # test dataset not random select length while different path
             self.l = random.randint(round(length * 0.2),round(length*0.9))
             self.start = 0
@@ -139,7 +128,7 @@ class mlpMetaEmbedding(nn.Module):
         super(mlpMetaEmbedding, self).__init__()
         self.embed = nn.Embedding(vocal_max + 1, 32, padding_idx=0)  # padding
         self.conv = nn.Conv1d(32, 32, kernel_size=3, padding=1)
-        N = 0
+        N = 32
         if first_point:
             self.conv_first_point = nn.Conv1d(2, 16, kernel_size=3, padding=1)
             N += 16
@@ -151,22 +140,19 @@ class mlpMetaEmbedding(nn.Module):
         self.out = outputLayer(N)
     def forward(self, x, first_points=None,metas=None):
 
-        # embedding = self.embed(x)  # B,T,32
-        # embedding = embedding.permute(0, 2, 1)  # B,C,T
+        embedding = self.embed(x)  # B,T,32
+        embedding = embedding.permute(0, 2, 1)  # B,C,T
         if self.first_point:
             first_points = first_points.permute(0, 2, 1)
-        # l1 = F.relu(self.conv(embedding))
-        # l1_max = torch.max(l1, dim=-1)[0]  # B,32 over-time-maxpooling
-        # features = l1_max
-        # if self.meta or self.first_point:
-        #     l1_max_norm = l1_max/torch.norm(l1_max,dim=-1,keepdim=True)
-        #     features = l1_max_norm
+        l1 = F.relu(self.conv(embedding))
+        l1_max = torch.max(l1, dim=-1)[0]  # B,32 over-time-maxpooling
+        l1_max_norm = l1_max/torch.norm(l1_max,dim=-1,keepdim=True)
+        features = l1_max_norm
         if self.first_point:
             l1_first_point = F.relu(self.conv_first_point(first_points))
             l1_max_first_point = torch.max(l1_first_point, dim=-1)[0]
             l1_max_first_point_norm = l1_max_first_point / torch.norm(l1_max_first_point, dim=-1, keepdim=True)
-            features = l1_max_first_point_norm
-            # features = torch.cat((features, l1_max_first_point_norm), dim=1)  # B,32+16
+            features = torch.cat((features, l1_max_first_point_norm), dim=1)  # B,32+16
         if self.meta:
             meta_embed = self.metaEmbed(metas)
             features = torch.cat([features,meta_embed],dim=1)
