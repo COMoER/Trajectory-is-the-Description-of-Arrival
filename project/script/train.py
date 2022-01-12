@@ -132,7 +132,7 @@ if __name__ == '__main__':
             first_points_val = first_points
         if meta_data is not None:
             meta_data_val = meta_data
-    error_best = 100
+    error_best = 10000
 
     for epoch in range(args.epoch):
         logger.info('**** EPOCH %03d ****' % (epoch))
@@ -172,6 +172,6 @@ if __name__ == '__main__':
     logger.info('last model test_err: %.6fkm', err_h)
     model.load_state_dict(torch.load(os.path.join(dir, "model_best.pt"),device))
     model.eval()
-    pred = model(X_test, first_points_test, meta_data_test).cpu().detach().numpy().reshape(-1, 2)
+    pred = model(X_test.to(device), first_points_test.to(device), meta_data_test.to(device)).cpu().detach().numpy().reshape(-1, 2)
     err_h = test_score(pred, y_test.detach().numpy().reshape(-1, 2))
     logger.info('best model test_err: %.6fkm', err_h)

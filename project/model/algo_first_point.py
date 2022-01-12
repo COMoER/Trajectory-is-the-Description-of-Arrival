@@ -22,7 +22,7 @@ class RandomSelect(nn.Module):
         if test:
             np.random.seed(2021) # set random seed
             # test dataset not random select length while different path
-            self.l = random.randint(round(length * 0.2),round(length*0.9))
+            self.l = random.randint(round(length * 0.2),round(length*0.7))
             self.start = 0
 
     def forward(self, paths):
