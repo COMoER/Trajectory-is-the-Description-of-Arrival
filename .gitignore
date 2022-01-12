@@ -823,3 +823,11 @@ shapelets.md
 prediction-taxi-trajectory.ipynb
 WORDCNN/*
 node2vec/*
+!project/pretrained/geohashmodel.pt
+!project/pretrained/meta_map.pt
+!project/pretrained/trans.pt
+cuts/*
+evaluation_script.r
+geoHash.py
+lab.ipynb
+test.py
