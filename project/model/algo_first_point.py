@@ -139,7 +139,7 @@ class mlpMetaEmbedding(nn.Module):
         super(mlpMetaEmbedding, self).__init__()
         self.embed = nn.Embedding(vocal_max + 1, 32, padding_idx=0)  # padding
         self.conv = nn.Conv1d(32, 32, kernel_size=3, padding=1)
-        N = 32
+        N = 0
         if first_point:
             self.conv_first_point = nn.Conv1d(2, 16, kernel_size=3, padding=1)
             N += 16
@@ -151,21 +151,22 @@ class mlpMetaEmbedding(nn.Module):
         self.out = outputLayer(N)
     def forward(self, x, first_points=None,metas=None):
 
-        embedding = self.embed(x)  # B,T,32
-        embedding = embedding.permute(0, 2, 1)  # B,C,T
+        # embedding = self.embed(x)  # B,T,32
+        # embedding = embedding.permute(0, 2, 1)  # B,C,T
         if self.first_point:
             first_points = first_points.permute(0, 2, 1)
-        l1 = F.relu(self.conv(embedding))
-        l1_max = torch.max(l1, dim=-1)[0]  # B,32 over-time-maxpooling
-        features = l1_max
-        if self.meta or self.first_point:
-            l1_max_norm = l1_max/torch.norm(l1_max,dim=-1,keepdim=True)
-            features = l1_max_norm
+        # l1 = F.relu(self.conv(embedding))
+        # l1_max = torch.max(l1, dim=-1)[0]  # B,32 over-time-maxpooling
+        # features = l1_max
+        # if self.meta or self.first_point:
+        #     l1_max_norm = l1_max/torch.norm(l1_max,dim=-1,keepdim=True)
+        #     features = l1_max_norm
         if self.first_point:
             l1_first_point = F.relu(self.conv_first_point(first_points))
             l1_max_first_point = torch.max(l1_first_point, dim=-1)[0]
             l1_max_first_point_norm = l1_max_first_point / torch.norm(l1_max_first_point, dim=-1, keepdim=True)
-            features = torch.cat((features, l1_max_first_point_norm), dim=1)  # B,32+16
+            features = l1_max_first_point_norm
+            # features = torch.cat((features, l1_max_first_point_norm), dim=1)  # B,32+16
         if self.meta:
             meta_embed = self.metaEmbed(metas)
             features = torch.cat([features,meta_embed],dim=1)

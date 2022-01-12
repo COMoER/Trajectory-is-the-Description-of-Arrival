@@ -18,6 +18,7 @@ def pipeline(df, n=100000,test=False,verbose=True):
 
     if test:
         df,meta_index = mapMeta(df)
+
         meta_data = []
         for meta in meta_index:
             meta_data.append(df[meta].tolist())

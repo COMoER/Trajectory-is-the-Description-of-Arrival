@@ -21,19 +21,19 @@ def mapMeta(df_train):
             x = dic[q]
             return x
         except:
-            print('ii')
             return 0
+
     taxi_map, call_map, stand_map = map_dict.values()
     df_train['TAXI_ID'] = [taxi_map[t] for t in df_train['TAXI_ID']]
     df_train["ORIGIN_CALL"] = [query(t,call_map) for t in df_train["ORIGIN_CALL"].fillna(-1)]
     df_train["ORIGIN_STAND"] = [query(t,stand_map) for t in df_train["ORIGIN_STAND"].fillna(-1)]
     times = df_train["TIMESTAMP"]
     x = [datetime.datetime.fromtimestamp(time, datetime.timezone.utc) for time in times]
-    df_train = df_train.reset_index()
     day = pd.DataFrame(
         np.array([(int(t.strftime('%j'))-1, (t.minute // 15 + t.hour * 4), t.weekday()//2) for t in x],
                  dtype=int),
         columns=['day', 'qh', 'qw'], dtype='object')
+    df_train = df_train.reset_index()
     meta_index = ['TAXI_ID',"ORIGIN_CALL","ORIGIN_STAND",'day', 'qh', 'qw']
     return pd.concat([df_train, day.reset_index()], axis=1),meta_index
 def getEmbedInfo():
