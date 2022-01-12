@@ -31,7 +31,7 @@ def mapMeta(df_train):
     x = [datetime.datetime.fromtimestamp(time, datetime.timezone.utc) for time in times]
     df_train = df_train.reset_index()
     day = pd.DataFrame(
-        np.array([(int(t.strftime("%j")) - 1, (t.minute // 15 + t.hour * 4), t.weekday()) for t in x],
+        np.array([(int(t.strftime('%j'))-1, (t.minute // 15 + t.hour * 4), t.weekday()//2) for t in x],
                  dtype=int),
         columns=['day', 'qh', 'qw'], dtype='object')
     meta_index = ['TAXI_ID',"ORIGIN_CALL","ORIGIN_STAND",'day', 'qh', 'qw']
@@ -40,11 +40,15 @@ def getEmbedInfo():
     with open(os.path.join(install_path,"pretrained","meta_map.pt"), 'rb') as f:
         map_dict = pkl.load(f)
     metainfo = {}
+    N = 10
     for name,value in map_dict.items():
-        metainfo[name] = (len(value.keys()),32,False)
-    metainfo['day'] = (365,32,False)
-    metainfo['qh'] = (4*24,32,False)
-    metainfo['qw'] = (7,32,False)
+        if name == 'taxi':
+            metainfo[name] = (len(value.keys()), N, False)
+        else:
+            metainfo[name] = (len(value.keys())-1, N, True)
+    metainfo['day'] = (365,N,False)
+    metainfo['qh'] = (4*24,N,False)
+    metainfo['qw'] = (4,N,False)
     return metainfo
 def getMetaMap(df_train):
     taxi_id = set(df_train['TAXI_ID'])

@@ -56,6 +56,7 @@ if __name__ == '__main__':
     metainfo = getEmbedInfo() if args.meta else None
     model = mlpMetaEmbedding(N,meta=args.meta, first_point=args.prefix,embed_table=metainfo).to(device)
     optim = torch.optim.Adam(model.parameters(),args.lr)
+
     critic = torch.nn.MSELoss()
     print("[INFO] load dataset")
     df_train = pd.read_csv(os.path.join(dataset_path,"dataset","train.csv"),delimiter=',')

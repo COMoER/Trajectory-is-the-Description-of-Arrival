@@ -33,12 +33,8 @@ class RandomSelect(nn.Module):
         self.test = test
         if test:
             # test dataset not random select length while different path
-            if self.head:
-                self.l = random.randint(round(length * 0.3), round(length * 0.7))
-                self.start = 0
-            else:
-                self.l = random.randint(round(length * 0.5), round(length * 0.9))
-                self.start = random.randint(0, length - self.l + 1)
+            self.l = random.randint(round(length * 0.2),round(length*0.9))
+            self.start = 0
 
     def forward(self, paths):
         length = self.length
@@ -133,7 +129,9 @@ class metaEmbedding(nn.Module):
         for i, layer in enumerate(self.embed_table):
             v = layer(metas[:,i])
             if self.norm:
-                v = v/torch.norm(v,dim=-1,keepdim=True)
+                n = torch.norm(v, dim=-1, keepdim=True)
+                n[torch.isclose(n,torch.zero_(n))]=1
+                v = v/n
             embeddings.append(v)
         return torch.cat(embeddings, -1)
 class mlpMetaEmbedding(nn.Module):
