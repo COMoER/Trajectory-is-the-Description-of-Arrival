@@ -5,7 +5,7 @@ Our project is focus on the prediction of taxi arrival by its trajectory (prefix
 
 #### Paper
 
-Our paper for this project is available [here](https://github.com/COMoER/Trajectory-is-the-Description-of-Arrival/report.pdf), you can get more information of our work in this.
+Our paper for this project is available [here](https://github.com/COMoER/Trajectory-is-the-Description-of-Arrival/blob/master/report.pdf), you can get more information of our work in this.
 
 #### Dependency
 
