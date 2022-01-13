@@ -30,7 +30,7 @@ def fit(self,df,n=100000,quantile=[0.01,0.99],verbose=False):
 
 on the given `kaggle` test dataset
 
-![geohash](.\img\geohash.png)
+![geohash](https://github.com/COMoER/Trajectory-is-the-Description-of-Arrival/img/geohash.png)
 
 ##### approximate method
 
@@ -40,11 +40,11 @@ error of this method is 0.01068883 km
 
 origin
 
-![origin](.\img\origin.png)
+![origin](https://github.com/COMoER/Trajectory-is-the-Description-of-Arrival/img/origin.png)
 
 trans
 
-![trans](.\img\trans.png)
+![trans](https://github.com/COMoER/Trajectory-is-the-Description-of-Arrival/img/trans.png)
 
 ##### time period analysis
 

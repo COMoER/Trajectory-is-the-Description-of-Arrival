@@ -3,6 +3,10 @@
 #### Introduction
 Our project is focus on the prediction of taxi arrival by its trajectory (prefix) , the trip start time and some meta information like TAXI ID, CALL PHONE NUMBER and STAND ID, which is based on the competition held by ECML/PKDD on *kaggle* in 2015. The competition has ended so we just compare our result with the scores of the teams joining it. The dataset is available at [https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i](https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i).
 
+#### Paper
+
+Our paper for this project is available [here](https://github.com/COMoER/Trajectory-is-the-Description-of-Arrival/report.pdf), you can get more information of our work in this.
+
 #### Dependency
 
 >conda create -n trajectory python=3.8
