@@ -1,4 +1,5 @@
 ## Trajectory is the Description of Arrival
+[![Security Status](https://www.murphysec.com/platform3/v3/badge/1610951648608813056.svg)](https://www.murphysec.com/accept?code=74d0125c29ffb4ca25b6ace127531565&type=1&from=2&t=1)
 > The final project of **SJTU AI3602** *Data Mining* course Group 23 
 #### Introduction
 Our project is focus on the prediction of taxi arrival by its trajectory (prefix) , the trip start time and some meta information like TAXI ID, CALL PHONE NUMBER and STAND ID, which is based on the competition held by ECML/PKDD on *kaggle* in 2015. The competition has ended so we just compare our result with the scores of the teams joining it. The dataset is available at [https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i](https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i).
